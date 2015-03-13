@@ -55,14 +55,77 @@ namespace KinectV2OSC.Model.Network
 
         public void Send(Body[] bodies)
         {
-            foreach (Body body in bodies)
+            if (bodies.Length > 2)
+            {
+                ulong[] closest = FindClosestBody(bodies);
+
+                foreach (Body body in bodies)
+                {
+                    foreach (var i in closest)
+                    {
+                        if (body.TrackingId.Equals(i))
+                        {
+                            Send(body);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var i in bodies)
+                 {
+                     Send(i);
+                 }
+            }
+        }
+
+        private double VectorLength(CameraSpacePoint point)
+        {
+            var result = Math.Pow(point.X, 2) + Math.Pow(point.Y, 2) + Math.Pow(point.Z, 2);
+            return result;
+        }
+
+        private ulong[] FindClosestBody(Body[] bodies)
+        {
+            double closestBodyDistance = double.MaxValue;;
+            ulong index = 0;
+            ulong previousIndex = 0;
+            foreach (var body in bodies)
             {
                 if (body.IsTracked)
                 {
-                    this.Send(body);
+                    var currentLocation = body.Joints[JointType.SpineBase].Position;
+
+                    var currentDistance = VectorLength(currentLocation);
+
+                    if (currentDistance < closestBodyDistance)
+                    {
+
+                        previousIndex = index;
+                        index = body.TrackingId;
+                        closestBodyDistance = currentDistance;
+                    }
+                    else
+                    {
+                        previousIndex = body.TrackingId;
+                    }
                 }
             }
+            ulong[] closestIndex;
+            if (bodies.Length > 1)
+            {
+                closestIndex = new ulong[2];
+                closestIndex[0] = index;
+                closestIndex[1] = previousIndex;
+            }
+            else
+            {
+                closestIndex = new ulong[1];
+                closestIndex[0] = index;
+            }
+            return closestIndex;
         }
+
 
         public void addGestures(VisualGestureBuilderFrame gestureFrame, ulong id, List<Gesture> discrete, List<Gesture> continuous)
         {
