@@ -63,7 +63,7 @@ namespace KinectV2OSC.Model.Network
                 {
                     foreach (var i in closest)
                     {
-                        if (body.TrackingId.Equals(i))
+                        if (body.TrackingId.Equals(i) && body.IsTracked)
                         {
                             Send(body);
                         }
@@ -74,7 +74,10 @@ namespace KinectV2OSC.Model.Network
             {
                 foreach (var i in bodies)
                  {
-                     Send(i);
+                     if (i.IsTracked)
+                     {
+                         Send(i);
+                     }
                  }
             }
         }
@@ -159,7 +162,7 @@ namespace KinectV2OSC.Model.Network
 
         private void Send(Body body)
         {
-
+            Console.WriteLine("send body");
             DateTime reference = new DateTime(2001, 01, 01, 0, 0, 0, DateTimeKind.Utc);
             TimeSpan duration = new TimeSpan(DateTime.UtcNow.Ticks - reference.Ticks);
             ulong minutesCount = Convert.ToUInt64(duration.TotalMinutes);

@@ -217,7 +217,7 @@
                         this.kinectCanvas.Draw(this.bodies);
                         this.bodySender.Send(this.bodies);
 
-
+                        Console.WriteLine(this.bodies.Length);
                         foreach (var body in bodies)
                         {
                             if (body != null && body.IsTracked)
